@@ -1,6 +1,6 @@
 FC := mpif90
 CC := mpicc
-MKDIR := mkdir
+MKDIR := mkdir -p
 
 build: test
 
@@ -24,8 +24,11 @@ test: test.o lib/libfeti4i.so
 	${LINK.F} -o test test.o -Llib -Wl,-rpath=lib -lfeti4i
 
 clean:
-	${RM} test.o feti4i_dummy.o feti4i_mod.o feti4i.mod
-	${RM} -r lib
+	${RM} test.o feti4i_dummy.o feti4i_mod.o
+
+clean-all: clean
+	${RM} feti4i.mod test 
+	${RM} -r lib 
 
 .PHONY: build clean
 
