@@ -2840,7 +2840,8 @@ CONTAINS
 
   IF(.NOT.C_ASSOCIATED(A % PermonMatrix)) THEN
     A % NoDirichlet = .TRUE.
-    A % PermonMatrix = Permon_InitMatrix(A % NumberOFRows)
+    !! A % PermonMatrix = Permon_InitMatrix(A % NumberOFRows)
+    CALL FETI4ICreateStiffnessMatrix(A % PermonMatrix, 1) !TODO add number of rows A % NumberOFRows
   END IF
 
   ALLOCATE(vals(n*n*dofs*dofs), ind(n*dofs))
@@ -2857,7 +2858,9 @@ CONTAINS
     END DO
   END DO
 
-  CALL Permon_UpdateMatrix( A % PermonMatrix, n*dofs, ind, vals )
+  !CALL Permon_UpdateMatrix( A % PermonMatrix, n*dofs, ind, vals )
+  CALL FETI4IAddElement(A % PermonMatrix, n*dofs, ind, vals)
+
 #endif
     
 !------------------------------------------------------------------------------

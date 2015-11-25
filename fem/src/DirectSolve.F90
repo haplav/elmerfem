@@ -1865,6 +1865,9 @@ CONTAINS
 !------------------------------------------------------------------------------
   SUBROUTINE Permon_SolveSystem( Solver,A,x,b,Free_Fact )
 !------------------------------------------------------------------------------
+#ifdef HAVE_FETI4I
+   use feti4i
+#endif
  
   LOGICAL, OPTIONAL :: Free_Fact
   TYPE(Matrix_t) :: A
@@ -1878,27 +1881,32 @@ CONTAINS
   INTEGER :: i,j,n,nd,ip,ierr,icntlft,nzloc
   LOGICAL :: Factorize, FreeFactorize, stat, matsym, matspd, scaled
 
+  INTEGER :: n_dof_partition
+
   INTEGER, ALLOCATABLE :: memb(:), DirichletInds(:), Neighbours(:)
   REAL(KIND=dp), ALLOCATABLE :: DirichletVals(:)
   INTEGER :: Comm_active, Group_active, Group_world
 
   REAL(KIND=dp), ALLOCATABLE :: dbuf(:)
 
-  INTERFACE
-     FUNCTION Permon_InitSolve(n, gnum, nd, dinds, dvals, n_n, n_ranks) RESULT(handle) BIND(c,name='permon_initsolve') 
-        USE, INTRINSIC :: ISO_C_BINDING
-        TYPE(C_PTR) :: handle
-        INTEGER(C_INT), VALUE :: n, nd, n_n
-        REAL(C_DOUBLE) :: dvals(*)
-        INTEGER(C_INT) :: gnum(*), dinds(*), n_ranks(*)
-     END FUNCTION Permon_Initsolve
 
-     SUBROUTINE Permon_Solve( handle, x, b ) BIND(c,name='permon_solve')
-        USE, INTRINSIC :: ISO_C_BINDING
-        REAL(C_DOUBLE) :: x(*), b(*)
-        TYPE(C_PTR), VALUE :: handle
-     END SUBROUTINE Permon_solve
-  END INTERFACE
+  n_dof_partition = A % NumberOfRows
+
+!  INTERFACE
+!     FUNCTION Permon_InitSolve(n, gnum, nd, dinds, dvals, n_n, n_ranks) RESULT(handle) BIND(c,name='permon_initsolve') 
+!        USE, INTRINSIC :: ISO_C_BINDING
+!        TYPE(C_PTR) :: handle
+!        INTEGER(C_INT), VALUE :: n, nd, n_n
+!        REAL(C_DOUBLE) :: dvals(*)
+!        INTEGER(C_INT) :: gnum(*), dinds(*), n_ranks(*)
+!     END FUNCTION Permon_Initsolve
+!
+!     SUBROUTINE Permon_Solve( handle, x, b ) BIND(c,name='permon_solve')
+!        USE, INTRINSIC :: ISO_C_BINDING
+!        REAL(C_DOUBLE) :: x(*), b(*)
+!        TYPE(C_PTR), VALUE :: handle
+!     END SUBROUTINE Permon_solve
+!  END INTERFACE
 
   IF ( PRESENT(Free_Fact) ) THEN
     IF ( Free_Fact ) THEN
@@ -1924,6 +1932,7 @@ CONTAINS
       END IF
     END DO
 
+    !TODO sequential case not working
     n = 0
     ALLOCATE(neighbours(Parenv % PEs))
     DO i=1,ParEnv % PEs
@@ -1933,11 +1942,22 @@ CONTAINS
       END IF
     END DO
 
-    A % PermonSolverInstance = Permon_InitSolve( SIZE(A % ParallelInfo % GlobalDOFs), &
-         A % ParallelInfo % GlobalDOFs, nd,  DirichletInds, DirichletVals, n, neighbours )
+    !A % PermonSolverInstance = Permon_InitSolve( SIZE(A % ParallelInfo % GlobalDOFs), &
+    !     A % ParallelInfo % GlobalDOFs, nd,  DirichletInds, DirichletVals, n, neighbours )
+
+    IF( n_dof_partition /=  SIZE(A % ParallelInfo % GlobalDOFs) ) THEN
+      CALL Fatal( 'Permon', &
+        'inconsistency: A % NumberOfRows /=  SIZE(A % ParallelInfo % GlobalDOFs' )
+    END IF
+
+    CALL FETI4ICreateInstance(A % PermonSolverInstance, A % PermonMatrix, &
+      A % NumberOfRows, b, A % ParallelInfo % GlobalDOFs, &
+      n, neighbours, &
+      nd, DirichletInds, DirichletVals)
   END IF
 
-  CALL Permon_Solve( A % PermonSolverInstance, x, b )
+  !CALL Permon_Solve( A % PermonSolverInstance, x, b )
+  CALL FETI4ISolve(A % PermonSolverInstance, n_dof_partition, x)
 #else
    CALL Fatal( 'Permon_SolveSystem', 'Permon Solver has not been installed.' )
 #endif
