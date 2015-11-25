@@ -57,7 +57,7 @@ void FETI4ICreateInstance(FETI4IInstance *instance, FETI4IMatrix matrix, FETI4II
 
   *instance = (FETI4IInstance) malloc(sizeof(struct FETI4IStructInstance));
   (*instance)->matrix = matrix;
-  assert(size == matrix->size);
+  //assert(size == matrix->size);
   (*instance)->rhs = rhs;
   (*instance)->l2g = l2g;
   (*instance)->neighbours_size = neighbours_size;
@@ -74,7 +74,7 @@ void FETI4ISolve(FETI4IInstance instance, FETI4IInt solution_size, FETI4IReal* s
   FETI4IReal *rhs = instance->rhs;
 
 	printf("%s: solving with matrix %p, rhs %p\n", __func__, (void*) instance->matrix, (void*) instance->rhs);
-  assert(solution_size == matrix->size);
+  //assert(solution_size == matrix->size);
   for (i=0; i<solution_size; i++) {
     printf("#%d %g\n",i,rhs[i]);
   }
