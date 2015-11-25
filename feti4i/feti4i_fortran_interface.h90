@@ -46,7 +46,7 @@ INTERFACE
   SUBROUTINE FETI4IDestroy(ptr) &
         BIND(c,NAME='FETI4IDestroy')
     IMPORT
-    TYPE(C_PTR) :: ptr                  ! void*   type in C
+    TYPE(C_PTR), VALUE :: ptr           ! void*   type in C
   END SUBROUTINE FETI4IDestroy
 END INTERFACE
 
