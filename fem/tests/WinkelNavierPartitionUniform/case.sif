@@ -72,7 +72,9 @@ Solver 1
   Linear System Timing = True
   Solver Timing = True
  
-  Linear System Solver = Iterative
+  Linear System Solver = Direct
+  Linear System Direct Method = permon
+
   Linear System Iterative Method = CG
   Linear System Max Iterations = 1000
   Linear System Convergence Tolerance = 1.0e-8
