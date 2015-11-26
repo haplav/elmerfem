@@ -1889,6 +1889,7 @@ CONTAINS
 
   REAL(KIND=dp), ALLOCATABLE :: dbuf(:)
 
+  write(*,*) "I'M HERE 1"
 
   n_dof_partition = A % NumberOfRows
 
@@ -1908,6 +1909,8 @@ CONTAINS
 !     END SUBROUTINE Permon_solve
 !  END INTERFACE
 
+  write(*,*) "I'M HERE 2"
+
   IF ( PRESENT(Free_Fact) ) THEN
     IF ( Free_Fact ) THEN
       RETURN
@@ -1917,10 +1920,14 @@ CONTAINS
   Factorize = ListGetLogical( Solver % Values, 'Linear System Refactorize', stat )
   IF ( .NOT. stat ) Factorize = .TRUE.
 
+  write(*,*) "I'M HERE 3"
+
   IF ( Factorize .OR. .NOT.C_ASSOCIATED(A % PermonSolverInstance) ) THEN
     IF ( C_ASSOCIATED(A % PermonSolverInstance) ) THEN
        CALL Fatal( 'Permon', 're-entry not implemented' )
     END IF
+
+  write(*,*) "I'M HERE 3.1"
 
     nd = COUNT(A % ConstrainedDOF)
     ALLOCATE(DirichletInds(nd), DirichletVals(nd))
@@ -1931,6 +1938,8 @@ CONTAINS
         DirichletInds(j) = i; DirichletVals(j) = A % Dvalues(i)
       END IF
     END DO
+
+  write(*,*) "I'M HERE 3.2"
 
     !TODO sequential case not working
     n = 0
@@ -1945,16 +1954,22 @@ CONTAINS
     !A % PermonSolverInstance = Permon_InitSolve( SIZE(A % ParallelInfo % GlobalDOFs), &
     !     A % ParallelInfo % GlobalDOFs, nd,  DirichletInds, DirichletVals, n, neighbours )
 
+    write(*,*) "I'M HERE 4"
+    
     IF( n_dof_partition /=  SIZE(A % ParallelInfo % GlobalDOFs) ) THEN
       CALL Fatal( 'Permon', &
         'inconsistency: A % NumberOfRows /=  SIZE(A % ParallelInfo % GlobalDOFs' )
     END IF
+
+    write(*,*) "I'M HERE 5"
 
     CALL FETI4ICreateInstance(A % PermonSolverInstance, A % PermonMatrix, &
       A % NumberOfRows, b, A % ParallelInfo % GlobalDOFs, &
       n, neighbours, &
       nd, DirichletInds, DirichletVals)
   END IF
+
+  write(*,*) "I'M HERE 5"
 
   !CALL Permon_Solve( A % PermonSolverInstance, x, b )
   CALL FETI4ISolve(A % PermonSolverInstance, n_dof_partition, x)
