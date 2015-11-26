@@ -75,15 +75,15 @@ void FETI4ISolve(FETI4IInstance instance, FETI4IInt solution_size, FETI4IReal* s
 
 	printf("%s: solving with matrix %p, rhs %p\n", __func__, (void*) instance->matrix, (void*) instance->rhs);
   //assert(solution_size == matrix->size);
-  for (i=0; i<solution_size; i++) {
-    printf("#%d %g\n",i,rhs[i]);
-  }
-  printf("\n");
-  for (i=0; i<solution_size; i++) {
-    printf("#%d %g ",i,solution[i]);
-    solution[i]=-i;
-    printf(" %g\n",solution[i]);
-  }
+  //for (i=0; i<solution_size; i++) {
+  //  printf("#%d %g\n",i,rhs[i]);
+  //}
+  //printf("\n");
+  //for (i=0; i<solution_size; i++) {
+  //  printf("#%d %g ",i,solution[i]);
+  //  solution[i]=-i;
+  //  printf(" %g\n",solution[i]);
+  //}
 }
 
 void FETI4IDestroy(void *ptr)
